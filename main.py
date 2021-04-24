@@ -2,6 +2,11 @@ import argparse
 import cv2
 import os
 
+# Watermark Configuration
+font = cv2.FONT_HERSHEY_COMPLEX
+color = (255, 255, 255)
+thickness = 4
+
 ap = argparse.ArgumentParser()
 ap.add_argument('-f', '--file', required=False,
                 help='Path to target file')
@@ -16,10 +21,7 @@ args = ap.parse_args()
 
 def process_image(filename, watermark, pos):
     working_image = cv2.imread(filename)
-    font = cv2.FONT_HERSHEY_COMPLEX
     text_length = len(watermark)
-    color = (255, 255, 255)
-    thickness = 4
     if working_image.shape[0] >= 4000:
         avg_char = 120
         text_width = text_length * avg_char
@@ -49,13 +51,13 @@ def process_image(filename, watermark, pos):
     if pos == 'lr':
         new_image = cv2.putText(working_image, args.watermark, image_lr, font, fontScale, color, thickness, cv2.LINE_AA)
 
-    if not os.path.exists(args.directory + '\\Watermarked'):
-        os.mkdir(args.directory + '\\Watermarked')
+    if not os.path.exists(os.getcwd() + '\\Watermarked'):
+        os.mkdir(os.getcwd() + '\\Watermarked')
 
-    path = args.directory + '\\' + 'Watermarked' + '\\' + file
+    path = os.getcwd() + '\\' + 'Watermarked' + '\\' + file
     cv2.imwrite(path, new_image)
 
 
-for file in os.listdir(args.directory):
+for file in os.listdir(os.getcwd()):
     if file.endswith('.jpg') or file.endswith('.png'):
-        process_image(args.directory + '\\' + file, args.watermark, args.pos)
+        process_image(os.getcwd() + '\\' + file, args.watermark, args.pos)
