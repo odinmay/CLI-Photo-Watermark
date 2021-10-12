@@ -21,16 +21,16 @@ args = ap.parse_args()
 print(args)
 
 def process_image(filename, watermark, pos):
-    # """
-    # :param filename: str
-    #     the path of the photo, built from cwd
-    # :param watermark: str
-    #     the text you want watermarked on the image
-    # :param pos: str
-    #     the position of the watermark  ex. "ll" (lower left) | "ur" (upper right)
-    # :return: None
-    #     a new folder name "Watermarked" will be made in CWD with finished images
-    # """
+    """
+    :param filename: str
+        the path of the photo, built from cwd
+    :param watermark: str
+        the text you want watermarked on the image
+    :param pos: str
+        the position of the watermark  ex. "ll" (lower left) | "ur" (upper right)
+    :return: None
+        a new folder name "Watermarked" will be made in CWD with finished images
+    """
 
     working_image = cv2.imread(filename)
     text_length = len(watermark)
