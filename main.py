@@ -1,4 +1,5 @@
 import argparse
+import numpy as np
 import cv2
 import os
 
@@ -22,6 +23,8 @@ ap.add_argument('-EQG','--EqualizeGrayHistogram',action = 'store_true',required 
                 help = 'Take gray image and equalize the intensities in the image')
 ap.add_argument('-EQC','--EqualizeColorHistogram',action = 'store_true',required = False,
                 help = 'Take colored image and equalize the intensities in the image')
+ap.add_argument('-MF','--MedianFilter',action = 'store_true',required = False,
+                help = 'Take gray image and apply a median smoothing filter to reduce noise')
 args = ap.parse_args()
 
 
@@ -61,6 +64,28 @@ def process_image(working_image, watermark, pos):
 
     path = os.getcwd() + '\\' + 'Watermarked' + '\\' + file
     cv2.imwrite(path, new_image)
+
+def medianFilter(matrix):
+    outputMatrix = matrix.copy()
+    matrix = np.pad(matrix, ((1, 1), (1, 1)), 'constant') #pad matrix with 0's
+    matrixRows = len(matrix)
+    matrixColumns = len(matrix[0])
+    for i in range(1, matrixRows - 1):
+        for j in range(1, matrixColumns - 1):
+
+            MiddleInt = matrix[i][j]
+            TopRightInt = matrix[i - 1][j + 1]
+            MiddleRightInt = matrix[i][j + 1]
+            BottomRightInt = matrix[i + 1][j + 1]
+            TopLeftInt = matrix[i - 1][j-1]
+            MiddleLeftInt = matrix[i][j - 1]
+            BottomLeftInt = matrix[i - 1][j + 1]
+            TopInt = matrix[i+1][j]
+            BottomInt = matrix[i-1][j]
+            matrixOfInts = [MiddleRightInt,TopRightInt,TopInt,TopLeftInt,MiddleInt,MiddleLeftInt,BottomLeftInt,BottomInt,BottomRightInt]
+            matrixOfInts.sort() # sort array
+            outputMatrix[i-1][j-1] = matrixOfInts[5]  # there will always be 9 elements so index 5 will be median 100% of the time
+    return outputMatrix
 
 
 def ntsc_grayscale(img):
@@ -133,25 +158,6 @@ def equalizecolor(img):
     return img
 
 
-def main():
-    for file in os.listdir(os.getcwd()):
-        if file.endswith('.jpg') or file.endswith('.png'):
-            working_image = cv2.imread(os.getcwd() + '\\' + file)
-            if args.NTSCgrayscale:
-                working_image = ntsc_grayscale(working_image)
-                # cv2.imshow('grayscale',working_image)  # testing
-                # cv2.waitKey(0)
-                # cv2.destroyAllWindows()
-            if args.EqualizeGrayHistogram:
-                if args.NTSCgrayscale:  # if its already gray ya cant gray it again
-                    working_image = getHistogramAndEqualize(working_image)
-                else:  # gray it before equalizing
-                    working_image = ntsc_grayscale(working_image)
-                    working_image = getHistogramAndEqualize(working_image)
-            if args.EqualizeColorHistogram:
-                working_image = equalizecolor(working_image)
-            process_image(working_image, args.watermark, args.pos)
-
 ###############################################################################
 
 
@@ -172,4 +178,10 @@ if __name__ == "__main__":
                     working_image = getHistogramAndEqualize(working_image)
             if args.EqualizeColorHistogram:
                 working_image = equalizecolor(working_image)
+            if args.MedianFilter:
+                if args.NTSCgrayscale:  # if its already gray ya cant gray it again
+                    working_image = medianFilter(working_image)
+                else:  # gray it before filtering
+                    working_image = ntsc_grayscale(working_image)
+                    working_image = medianFilter(working_image)
             process_image(working_image, args.watermark, args.pos)
