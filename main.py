@@ -8,6 +8,7 @@ font = cv2.FONT_HERSHEY_COMPLEX
 color = (255, 255, 255)
 thickness = 4
 
+# Setting up the argument parser for CMD Line interface
 ap = argparse.ArgumentParser()
 ap.add_argument('-f', '--file', required=False,
                 help='Path to target file')
@@ -15,7 +16,7 @@ ap.add_argument('-w', '--watermark', required=True,
                 help='Text you would like to watermark image with | (Enclose in quotes if there are spaces)')
 ap.add_argument('-d', '--directory', required=False,
                 help='Processes every image in the CWD')
-ap.add_argument('-p', '--pos', required=True,
+ap.add_argument('-p', '--position', required=True,
                 help='Options are "ul"(upper left) "ur"(upper right) "ll"(lower left) "lr"(lower right)')
 ap.add_argument('-ntsc', '--NTSCgrayscale',action = 'store_true',required = False,
                 help = 'Change image to National Television System Committee standard for grayscale')
@@ -26,9 +27,11 @@ ap.add_argument('-EQC','--EqualizeColorHistogram',action = 'store_true',required
 ap.add_argument('-MF','--MedianFilter',action = 'store_true',required = False,
                 help = 'Take gray image and apply a median smoothing filter to reduce noise')
 args = ap.parse_args()
+print(args)
 
 
 def process_image(working_image, watermark, pos):
+
     text_length = len(watermark)
     if working_image.shape[0] >= 4000:
         avg_char = 120
@@ -41,7 +44,7 @@ def process_image(working_image, watermark, pos):
     else:
         avg_char = 80
         text_width = text_length * avg_char
-        fontScale = 4
+        fontScale = 3
         image_ul = (0, 100)
         image_ur = (working_image.shape[1] - text_width, 100)
         image_ll = (0, working_image.shape[0] - 50)
@@ -72,6 +75,7 @@ def medianFilter(matrix):
     matrixColumns = len(matrix[0])
     for i in range(1, matrixRows - 1):
         for j in range(1, matrixColumns - 1):
+
 
             MiddleInt = matrix[i][j]
             TopRightInt = matrix[i - 1][j + 1]
@@ -185,3 +189,4 @@ if __name__ == "__main__":
                     working_image = ntsc_grayscale(working_image)
                     working_image = medianFilter(working_image)
             process_image(working_image, args.watermark, args.pos)
+
